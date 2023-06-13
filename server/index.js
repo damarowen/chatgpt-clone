@@ -9,7 +9,6 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-
 const openai = new OpenAIApi(configuration);
 
 const app = express();
@@ -18,23 +17,28 @@ app.use(cors());
 
 const port = 3010;
 
-app.post("/", async (req, res) => {
-  console.log(process.env.OPENAI_API_KEY, "<<<<<<<<<<<<");
-  let { message, currentModel } = req.body;
-  console.log("🚀 ~ file: index.js:24 ~ app.post ~ message:", message)
-  if (!currentModel) currentModel = "gpt-3.5-turbo";
-  //console.log(message, currentModel, "message")
+let chatHistory = []; // Store the chat history
 
-  
+app.post("/", async (req, res) => {
+  let { message, currentModel } = req.body;
+  if (!currentModel) currentModel = "gpt-3.5-turbo";
+
+  // Add the user's message to the chat history
+  chatHistory.push({ role: "user", content: message });
+
   const response = await openai.createChatCompletion({
     model: `${currentModel}`,
-    messages: [{ role: "user", content: `${message}` }],
+    messages: chatHistory,
     max_tokens: 100,
     temperature: 0.5,
   });
 
+  // Add the assistant's response to the chat history
+  chatHistory.push(response.data.choices[0].message);
+
+  console.log(chatHistory,"<<<<<<<<<<<<<chatHistory<<<<<")
   res.json({
-    message: response.data.choices[0].message.content,
+    message: response.data.choices[0].message,
   });
 });
 
