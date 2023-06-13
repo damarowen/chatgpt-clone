@@ -15,7 +15,7 @@ function App() {
         // add state for input and chat log
         const [input, setInput] = useState("");
         const [models, setModels] = useState([]);
-        const [currentModel, setCurrentModel] = useState("text-davinci-003");
+        const [currentModel, setCurrentModel] = useState("gpt-3.5-turbo");
 
         const [chatLog, setChatLog] = useState([{
             user: "gpt",
@@ -44,23 +44,26 @@ function App() {
         let chatLogNew = [...chatLog, { user: "me", message: `${input}`}]
         setInput("");
         setChatLog(chatLogNew)
+
         // fetch response to the api combining the chat log 
         // array of messages and sending it as a message to
         // localhost:3000 as a post
         const messages = chatLogNew.map((message) => message.message).join("\n")
+        
+        console.log("🚀 ~ file: App.js:51 ~ handleSubmit ~ messages:", messages)
+        console.log("🚀 ~ file: App.js:46 ~ handleSubmit ~ input:", input)
         const response = await fetch("http://localhost:3010/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            message: messages,
+            message:  input,
             currentModel,
           })
         });
         const data = await response.json();
         await setChatLog([...chatLogNew, { user: "gpt", message: `${data.message}`}])
-        console.log(data.message);
       }
 
 
