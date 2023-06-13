@@ -17,7 +17,12 @@ app.use(cors());
 
 const port = 3010;
 
-let chatHistory = []; // Store the chat history
+const instruction = {
+  role: "system",
+  content: "You are ChatGPT, a large language model trained by OpenAI. Carefully heed the user's instructions. Respond using Markdown.",
+};
+
+let chatHistory = [instruction]; // Store the chat history
 
 app.post("/", async (req, res) => {
   let { message, currentModel } = req.body;
@@ -36,7 +41,7 @@ app.post("/", async (req, res) => {
   // Add the assistant's response to the chat history
   chatHistory.push(response.data.choices[0].message);
 
-  console.log(chatHistory,"<<<<<<<<<<<<<chatHistory<<<<<")
+  console.log(chatHistory, "<<<<<<<<<<<<<chatHistory<<<<<");
   res.json({
     message: response.data.choices[0].message,
   });
