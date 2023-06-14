@@ -6,6 +6,21 @@ import Swal from "sweetalert2";
 // Your component code goes here
 import ChatMessage from "./components/ChatMessage";
 
+function ShowErrorDialog(errorMessage) {
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: errorMessage,
+    showCancelButton: true,
+    confirmButtonText: 'Refresh',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.reload();
+    }
+  });
+}
+
+
 function App() {
   // use effect run once when app loads
   useEffect(() => {
@@ -38,11 +53,7 @@ function App() {
       })
       .catch((error) => {
         console.error(error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "An error occurred while fetching the API.",
-        });
+        ShowErrorDialog(error);
       });
   }
 
@@ -59,12 +70,8 @@ function App() {
       })
       .catch((error) => {
         console.error(error);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "An error occurred while fetching the models.",
-        });
-      });
+        ShowErrorDialog(error);
+        })
   }
 
   async function handleSubmit(e) {
@@ -84,7 +91,7 @@ function App() {
           currentModel,
         }),
       });
-      console.log("🚀 ~ file: App.js:86 ~ handleSubmit ~ body:", currentModel);
+
       if (!response.ok) {
         throw new Error("An error occurred while processing the request.");
       }
@@ -98,11 +105,7 @@ function App() {
       ]);
     } catch (error) {
       console.error(error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "An error occurred while processing the request.",
-      });
+      ShowErrorDialog(error);
     }
   }
 
@@ -118,6 +121,7 @@ function App() {
             onChange={(e) => {
               setCurrentModel(e.target.value);
             }}
+            style={{ width: "200px" }} // Set a fixed width for the select element
           >
             <option value="">Choose</option>
             {models.map((model, index) => (
