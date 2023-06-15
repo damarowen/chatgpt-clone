@@ -1,36 +1,28 @@
 import "./App.css";
 import "./normal.css";
-import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2";
+import React, { useState,useRef, useEffect } from "react";
 
 // Your component code goes here
 import ChatMessage from "./components/ChatMessage";
+import { GetEngines , ShowErrorDialog }from "./utils/Utils";
+import Thinking from "./components/Thinking";
 
-function ShowErrorDialog(errorMessage) {
-  Swal.fire({
-    icon: 'error',
-    title: 'Error',
-    text: errorMessage,
-    showCancelButton: true,
-    confirmButtonText: 'Refresh',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.reload();
-    }
-  });
-}
 
 
 function App() {
-  // use effect run once when app loads
-  useEffect(() => {
-    getEngines();
-  }, []);
+
 
   // add state for input and chat log
   const [input, setInput] = useState("");
   const [models, setModels] = useState([]);
   const [currentModel, setCurrentModel] = useState("gpt-3.5-turbo");
+  const inputRef = useRef();
+  const [thinking, setThinking] = useState(false);
+
+    // use effect run once when app loads
+    useEffect(() => {
+      GetEngines(setModels);
+    }, []);
 
   const [chatLog, setChatLog] = useState([
     {
@@ -38,6 +30,7 @@ function App() {
       message: "How can I help you today?",
     },
   ]);
+
 
   // clear chats
   function clearChat() {
@@ -57,28 +50,13 @@ function App() {
       });
   }
 
-  function getEngines() {
-    fetch("http://localhost:3010/models")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("An error occurred while fetching the models.");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setModels(data.data);
-      })
-      .catch((error) => {
-        console.error(error);
-        ShowErrorDialog(error);
-        })
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     let chatLogNew = [...chatLog, { user: "me", message: `${input}` }];
     setInput("");
     setChatLog(chatLogNew);
+    setThinking(true);
 
     try {
       const response = await fetch("http://localhost:3010/", {
@@ -98,6 +76,8 @@ function App() {
 
       const data = await response.json();
 
+      setThinking(false);
+
       //append
       setChatLog([
         ...chatLogNew,
@@ -109,6 +89,14 @@ function App() {
     }
   }
 
+    /**
+   * Focuses the TextArea input to when the component is first rendered.
+   */
+    useEffect(() => {
+      inputRef.current.focus();
+    }, []);
+
+    
   return (
     <div className="App">
       <aside className="sidemenu">
@@ -126,7 +114,7 @@ function App() {
             <option value="">Choose</option>
             {models.map((model, index) => (
               <option key={index} value={model.id}>
-                {model.id}{" "}
+                {model.id}
               </option>
             ))}
           </select>
@@ -134,13 +122,18 @@ function App() {
       </aside>
       <section className="chatbox">
         <div className="chat-log">
+
           {chatLog.map((message, index) => (
             <ChatMessage key={index} message={message} />
           ))}
+
+          {thinking && <Thinking />}
+
         </div>
         <div className="chat-input-holder">
           <form onSubmit={handleSubmit}>
             <input
+              ref={inputRef}
               rows="1"
               value={input}
               onChange={(e) => setInput(e.target.value)}
