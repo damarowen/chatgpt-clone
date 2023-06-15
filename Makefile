@@ -1,6 +1,6 @@
 
 servers:
-	cd server && node index.js
+	cd server && npm run dev
 
 clients:
 	cd client && npm start

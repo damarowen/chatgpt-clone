@@ -1,5 +1,4 @@
 import "./App.css";
-import "./normal.css";
 import React, { useState,useRef, useEffect } from "react";
 
 // Your component code goes here
@@ -17,12 +16,16 @@ function App() {
   const [models, setModels] = useState([]);
   const [currentModel, setCurrentModel] = useState("gpt-3.5-turbo");
   const inputRef = useRef();
+  const messagesEndRef = useRef();
   const [thinking, setThinking] = useState(false);
 
-    // use effect run once when app loads
-    useEffect(() => {
-      GetEngines(setModels);
-    }, []);
+    /**
+   * Scrolls the chat area to the bottom.
+   */
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
 
   const [chatLog, setChatLog] = useState([
     {
@@ -89,11 +92,24 @@ function App() {
     }
   }
 
+
+    /**
+   * Scrolls the chat area to the bottom when the messages array is updated.
+   */
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatLog]);
+
     /**
    * Focuses the TextArea input to when the component is first rendered.
    */
     useEffect(() => {
       inputRef.current.focus();
+    }, []);
+    
+    // use effect run once when app loads
+    useEffect(() => {
+      GetEngines(setModels);
     }, []);
 
     
@@ -111,7 +127,7 @@ function App() {
             }}
             style={{ width: "200px" }} // Set a fixed width for the select element
           >
-            <option value="">Choose</option>
+            <option value="">Models</option>
             {models.map((model, index) => (
               <option key={index} value={model.id}>
                 {model.id}
@@ -128,6 +144,7 @@ function App() {
           ))}
 
           {thinking && <Thinking />}
+          <span ref={messagesEndRef}></span>
 
         </div>
         <div className="chat-input-holder">
